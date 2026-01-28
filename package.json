@@ -4,7 +4,7 @@
   "description": "Nasri Tech Website Backend ",
   "license": "ISC",
   "author": "Syed Haroon Shah",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
