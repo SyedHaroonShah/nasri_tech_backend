@@ -18,7 +18,7 @@ const extractPublicId = (url) => {
 
     return publicId;
   } catch (error) {
-    log('Error extracting publicId:', error);
+    console.log('Error extracting publicId:', error);
     return null;
   }
 };
@@ -31,14 +31,14 @@ const uploadOnCloudinary = async (localFilePath) => {
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: 'auto', // Corrected to a string
     });
-    // log('File has been successfully uploaded:', response);
+    console.log('File has been successfully uploaded:', response);
 
     // Clean up the local file
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
     // Log the error for debugging
-    log('Error uploading file to Cloudinary:', error);
+    console.log('Error uploading file to Cloudinary:', error);
 
     // Clean up the local file even in case of error
     fs.unlinkSync(localFilePath);
