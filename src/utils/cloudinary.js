@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { log } from '../contants.js';
 import fs from 'fs';
 
 // Cloudinary Configuration

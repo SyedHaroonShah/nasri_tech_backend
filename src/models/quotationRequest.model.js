@@ -51,16 +51,15 @@ const quotationSchema = new Schema(
       type: String,
       trim: true,
     },
-    relatedImages: [
-      {
-        type: String, // Cloudinary or URL
+    images: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: function (arr) {
+          return arr.length <= 3;
+        },
+        message: 'You can upload a maximum of 3 images',
       },
-    ],
-    validate: {
-      validator: function (arr) {
-        return arr.length <= 3; // Limit to max 5 images
-      },
-      message: 'You can upload a maximum of 5 images.',
     },
 
     // ======================

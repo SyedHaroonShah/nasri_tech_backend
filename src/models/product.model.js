@@ -60,18 +60,17 @@ const productSchema = new Schema(
         trim: true,
       },
     ],
-    images: [
-      {
-        type: String, // Cloudinary or URL
-        required: [true, 'Product images are required.'],
+    images: {
+      type: [String],
+      required: [true, 'Product images are required.'],
+      validate: {
+        validator: function (arr) {
+          return arr.length <= 5;
+        },
+        message: 'You can upload a maximum of 5 images.',
       },
-    ],
-    validate: {
-      validator: function (arr) {
-        return arr.length <= 5; // Limit to max 5 images
-      },
-      message: 'You can upload a maximum of 5 images.',
     },
+
     inStock: {
       type: Boolean,
       default: true,

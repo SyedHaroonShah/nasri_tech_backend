@@ -4,15 +4,6 @@ import bcrypt from 'bcrypt';
 
 const adminSchema = new Schema(
   {
-    username: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-      unique: true,
-      index: true,
-    },
-
     email: {
       type: String,
       required: true,
@@ -27,7 +18,7 @@ const adminSchema = new Schema(
       trim: true,
     },
 
-    phone: {
+    phoneNumber: {
       type: String,
       required: true,
       trim: true,
@@ -64,11 +55,10 @@ const adminSchema = new Schema(
   { timestamps: true }
 );
 
-adminSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+adminSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
 
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 adminSchema.methods.isPasswordCorrect = async function (password) {
