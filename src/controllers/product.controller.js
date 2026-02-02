@@ -7,6 +7,25 @@ import {
   deleteFromCloudinary,
 } from '../utils/cloudinary.js';
 
+const normalizeFeatures = (features) => {
+  if (!features) return [];
+
+  // already an array (e.g. features[])
+  if (Array.isArray(features)) {
+    return features.map((f) => f.trim()).filter(Boolean);
+  }
+
+  // comma-separated string
+  if (typeof features === 'string') {
+    return features
+      .split(',')
+      .map((f) => f.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
 /* ======================================================
    CREATE PRODUCT (ADMIN)
 ====================================================== */
@@ -43,28 +62,20 @@ const createProduct = asyncHandler(async (req, res) => {
     throw new ApiError(409, 'Product already exists');
   }
 
-  /* ---------- image upload logic ---------- */
+  /* ---------- normalize features ---------- */
+  const normalizedFeatures = normalizeFeatures(features);
 
-  let imageLocalPaths = [];
-
-  if (req.files?.images?.length > 0) {
-    imageLocalPaths = req.files.images.map((file) => file.path);
-  }
-
-  if (imageLocalPaths.length === 0) {
+  /* ---------- image upload ---------- */
+  if (!req.files || req.files.length === 0) {
     throw new ApiError(400, 'Product images are required');
   }
 
   const uploadedImages = [];
 
-  for (const localPath of imageLocalPaths) {
-    const uploaded = await uploadOnCloudinary(localPath);
-
-    if (uploaded) {
-      uploadedImages.push({
-        url: uploaded.secure_url,
-        publicId: uploaded.public_id,
-      });
+  for (const file of req.files) {
+    const uploaded = await uploadOnCloudinary(file.path);
+    if (uploaded?.secure_url) {
+      uploadedImages.push({ url: uploaded.secure_url });
     }
   }
 
@@ -73,7 +84,6 @@ const createProduct = asyncHandler(async (req, res) => {
   }
 
   /* ---------- create product ---------- */
-
   const product = await Product.create({
     productId,
     productName,
@@ -86,7 +96,7 @@ const createProduct = asyncHandler(async (req, res) => {
     warrantyMonths,
     price,
     description,
-    features,
+    features: normalizedFeatures,
     images: uploadedImages,
     inStock,
   });
@@ -126,10 +136,18 @@ const getProductById = asyncHandler(async (req, res) => {
    UPDATE PRODUCT DETAILS (NO IMAGES)
 ====================================================== */
 const updateProduct = asyncHandler(async (req, res) => {
+  /* ---------- normalize features if present ---------- */
+  if (req.body.features) {
+    req.body.features = normalizeFeatures(req.body.features);
+  }
+
   const updatedProduct = await Product.findByIdAndUpdate(
     req.params.productId,
     req.body,
-    { new: true }
+    {
+      new: true,
+      runValidators: true,
+    }
   );
 
   if (!updatedProduct) {
@@ -151,32 +169,29 @@ const updateProductImages = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Product not found');
   }
 
-  let imageLocalPaths = [];
-
-  if (req.files?.length > 0) {
-    imageLocalPaths = req.files.map((file) => file.path);
-  }
-
-  if (!imageLocalPaths.length) {
+  if (!req.files || req.files.length === 0) {
     throw new ApiError(400, 'Images are required');
   }
 
-  /* delete old images */
+  /* delete old images from cloudinary */
   for (const img of product.images) {
     await deleteFromCloudinary(img.url, 'image');
   }
 
   const uploadedImages = [];
 
-  for (const localPath of imageLocalPaths) {
-    const uploaded = await uploadOnCloudinary(localPath);
+  for (const file of req.files) {
+    const uploaded = await uploadOnCloudinary(file.path);
 
-    if (uploaded) {
+    if (uploaded?.secure_url) {
       uploadedImages.push({
         url: uploaded.secure_url,
-        publicId: uploaded.public_id,
       });
     }
+  }
+
+  if (!uploadedImages.length) {
+    throw new ApiError(400, 'Images upload failed');
   }
 
   product.images = uploadedImages;
@@ -228,7 +243,6 @@ const filterProducts = asyncHandler(async (req, res) => {
   if (cameraType) filter.cameraType = cameraType;
   if (resolution) filter.resolution = resolution;
   if (nightVision !== undefined) filter.nightVision = nightVision === 'true';
-
   if (inStock !== undefined) filter.inStock = inStock === 'true';
 
   if (minPrice || maxPrice) {

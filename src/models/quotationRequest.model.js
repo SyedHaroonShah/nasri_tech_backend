@@ -31,7 +31,6 @@ const quotationSchema = new Schema(
     },
     cameraType: {
       type: String,
-      required: true,
       enum: ['IP', 'Analog', 'WiFi'],
     },
     quantity: {
@@ -43,17 +42,18 @@ const quotationSchema = new Schema(
     // ======================
     // Problem / Requirement
     // ======================
-    problemDescription: {
+    description: {
       type: String,
       trim: true,
     },
-    installationLocation: {
+    location: {
       type: String,
+      required: true,
       trim: true,
     },
     images: {
       type: [String],
-      required: true,
+      default: [],
       validate: {
         validator: function (arr) {
           return arr.length <= 3;

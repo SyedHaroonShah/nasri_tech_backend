@@ -61,16 +61,19 @@ const productSchema = new Schema(
       },
     ],
     images: {
-      type: [String],
-      required: [true, 'Product images are required.'],
-      validate: {
-        validator: function (arr) {
-          return arr.length <= 5;
+      type: [
+        {
+          url: {
+            type: String,
+            required: true,
+          },
         },
+      ],
+      validate: {
+        validator: (arr) => arr.length <= 5,
         message: 'You can upload a maximum of 5 images.',
       },
     },
-
     inStock: {
       type: Boolean,
       default: true,
