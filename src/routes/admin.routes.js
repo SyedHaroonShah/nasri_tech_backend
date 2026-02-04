@@ -53,6 +53,12 @@ import {
   getWarrantyClaimStats,
 } from '../controllers/warrantyClaim.controller.js';
 
+import {
+  createShopDetails,
+  updateShopDetails,
+  toggleShopStatus,
+} from '../controllers/shopDetails.controller.js';
+
 import { upload } from '../middlewares/multer.middleware.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
@@ -223,5 +229,13 @@ router
 router
   .route('/warranty-claims/:warrantyClaimId')
   .delete(verifyJWT, deleteWarrantyClaim);
+
+/* ===========================
+   SHOP DETAILS ROUTES (ADMIN)
+=========================== */
+
+router.post('/createShop', verifyJWT, createShopDetails);
+router.put('/updateShop', verifyJWT, updateShopDetails);
+router.patch('/shopStatus', verifyJWT, toggleShopStatus);
 
 export default router;
