@@ -1,5 +1,11 @@
 import { Router } from 'express';
 
+import {
+  getAllProducts,
+  getProductById,
+  filterProducts,
+} from '../controllers/product.controller.js';
+
 import { createQuotation } from '../controllers/quotation.controller.js';
 
 import {
@@ -17,6 +23,15 @@ import {
 import { upload } from '../middlewares/multer.middleware.js';
 
 const router = Router();
+
+// get all products
+router.route('/products').get(getAllProducts);
+
+// filter products
+router.route('/products/filter').get(filterProducts);
+
+// get single product
+router.route('/products/:productId').get(getProductById);
 
 /* ===========================
    QUOTATION ROUTES (CUSTOMER - NO AUTH)
